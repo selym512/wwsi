@@ -4,8 +4,6 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
 import com.opencsv.CSVWriterBuilder;
-import com.opencsv.bean.CsvBindByPosition;
-import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.exceptions.CsvException;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -15,6 +13,9 @@ import java.util.List;
 
 @ApplicationScoped
 public class csvManipulation {
+    public csvManipulation(){
+
+    }
     public String getDailySentiment() throws IOException, CsvException {
         CSVReader reader = new CSVReaderBuilder(new FileReader("dailySentiment.csv")).build();
         List<String[]> myEntries = reader.readAll();
@@ -43,13 +44,15 @@ public class csvManipulation {
     }
 
     public void writePhrases() throws IOException{
-        CSVWriter writer = (CSVWriter) new CSVWriterBuilder(new FileWriter("dailySentiment.csv"))
-                .withSeparator('\t')
-                .build();
-        // feed in your array (or convert your data to an array)
-        String[] entries = "first#second#third".split("#");
-        writer.writeNext(entries);
-        writer.close();
+        String path = System.getProperty("user.dir");
+        System.out.println(path);
+//        CSVWriter writer = (CSVWriter) new CSVWriterBuilder(new FileWriter("dailySentiment.csv"))
+//                .withSeparator('\t')
+//                .build();
+//        // feed in your array (or convert your data to an array)
+//        String[] entries = "first#second#third".split("#");
+//        writer.writeNext(entries);
+//        writer.close();
     }
 
 }
