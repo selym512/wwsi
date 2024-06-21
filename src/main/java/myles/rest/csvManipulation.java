@@ -8,8 +8,11 @@ import com.opencsv.bean.CsvBindByPosition;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.exceptions.CsvException;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,13 +45,29 @@ public class csvManipulation {
         }
     }
 
-    public void writePhrases() throws IOException{
-        CSVWriter writer = (CSVWriter) new CSVWriterBuilder(new FileWriter("dailySentiment.csv"))
+    public void writePhrases(JSONObject sentimentDataObject) throws IOException{
+        CSVWriter writer = (CSVWriter) new CSVWriterBuilder(new FileWriter("dailyPhrases.csv"))
                 .withSeparator('\t')
                 .build();
         // feed in your array (or convert your data to an array)
-        String[] entries = "first#second#third".split("#");
-        writer.writeNext(entries);
+//        String[] entries = "first#second#third".split("#");
+        JSONArray pos = (JSONArray) sentimentDataObject.get("positive");
+        String[] posArr = new String[pos.size()];
+        for(int i = 0; i < pos.size(); i++){
+            JSONObject entry = (JSONObject) pos.get(i);
+            posArr[i] = entry.get("Phrase").toString();
+        }
+        JSONArray neg = (JSONArray) sentimentDataObject.get("negative");
+        String[] negArr = new String[neg.size() + 1];
+        negArr[0] = ("\n");
+        for(int i = 1; i < neg.size() + 1; i++){
+            JSONObject entry = (JSONObject) neg.get(i);
+            negArr[i] =  (entry.get("Phrase").toString());
+        }
+        writer.writeNext(posArr);
+        writer.writeNext(negArr);
+
+
         writer.close();
     }
 
