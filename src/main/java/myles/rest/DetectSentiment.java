@@ -37,18 +37,17 @@ public class DetectSentiment {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public void runDetectSentiments(@RequestBody List<String> phrases) throws IOException, CsvException {
-//        Region region = Region.US_EAST_2;
-//        ComprehendClient sentimentClient = ComprehendClient.builder().region(region).build();
-//        StartSentimentDetectionJobResponse startAnalyzerResponse = startDetectSentimentsJob(sentimentClient);
-//        String jobID = receiveDetectSentimentJobID(sentimentClient, startAnalyzerResponse);
-//        sentimentClient.close();
-//        String bucketName = System.getenv("bucketName");
-//        String keyName = "daily/" + System.getenv("accountID") + "-SENTIMENT-" + jobID + "/output/output.tar.gz";
-//        bucketController.getBucket(bucketName, keyName);
-//        JSONArray sentimentJsonArr = jsonReader.txtFiletoJsonArray(Paths.get("../../../../../../output").toAbsolutePath().normalize().toString());
-//        sentimentJsonArr = jsonReader.combinePhrasesWithSentimentJson(sentimentJsonArr, phrases);
-//        JSONObject sentimentDataObject = jsonReader.organizeData(sentimentJsonArr);
-        csvManipulator.writePhrases();
+        Region region = Region.US_EAST_2;
+        ComprehendClient sentimentClient = ComprehendClient.builder().region(region).build();
+        StartSentimentDetectionJobResponse startAnalyzerResponse = startDetectSentimentsJob(sentimentClient);
+        String jobID = receiveDetectSentimentJobID(sentimentClient, startAnalyzerResponse);
+        sentimentClient.close();
+        String bucketName = System.getenv("bucketName");
+        String keyName = "daily/" + System.getenv("accountID") + "-SENTIMENT-" + jobID + "/output/output.tar.gz";
+        bucketController.getBucket(bucketName, keyName);
+        JSONArray sentimentJsonArr = jsonReader.txtFiletoJsonArray(Paths.get("../../../../../../output").toAbsolutePath().normalize().toString());
+        sentimentJsonArr = jsonReader.combinePhrasesWithSentimentJson(sentimentJsonArr, phrases);
+        JSONObject sentimentDataObject = jsonReader.organizeData(sentimentJsonArr);
     }
     public static StartSentimentDetectionJobResponse startDetectSentimentsJob(ComprehendClient sentimentClient) throws CsvException, IOException {
         try {
