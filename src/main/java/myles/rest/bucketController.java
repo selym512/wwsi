@@ -42,21 +42,21 @@ public class bucketController {
                     .build();
 //            File currentPath = new File("").getCanonicalFile();
 //            File localFile = new File("").getAbsoluteFile();
-            Path p = Paths.get("../../../../../../src/downloads/output.tar.gz").toAbsolutePath().normalize();
-            Path pUnzip = Paths.get("../../../../../../src/downloads/output").toAbsolutePath().normalize();
+            Path p = Paths.get("../../../../../../output.tar.gz").toAbsolutePath().normalize();
+            Path pUnzip = Paths.get("../../../../../../output").toAbsolutePath().normalize();
             Files.deleteIfExists(p);
             Files.deleteIfExists(pUnzip);
             System.out.println(p.toString());
             GetObjectResponse getObjectResponse = s3Client.getObject(getObjectRequest, p);
             System.out.println("Downloaded object");
-            InputStream fi = Files.newInputStream(Paths.get("../../../../../../src/downloads/output.tar.gz").toAbsolutePath().normalize());
+            InputStream fi = Files.newInputStream(Paths.get("../../../../../../output.tar.gz").toAbsolutePath().normalize());
             BufferedInputStream bi = new BufferedInputStream(fi);
             GzipCompressorInputStream gzi = new GzipCompressorInputStream(bi);
             TarArchiveInputStream ti = new TarArchiveInputStream(gzi);
             ArchiveEntry entry;
             while ((entry = ti.getNextEntry()) != null) {
                 // create a new path, remember check zip slip attack
-                Path outPath = Paths.get("../../../../../../src/downloads/output").toAbsolutePath().normalize();
+                Path outPath = Paths.get("../../../../../../output").toAbsolutePath().normalize();
                 //checking
                 // copy TarArchiveInputStream to newPath
                 Files.copy(ti, outPath);

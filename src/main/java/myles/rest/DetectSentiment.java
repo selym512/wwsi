@@ -43,7 +43,7 @@ public class DetectSentiment {
         String bucketName = System.getenv("bucketName");
         String keyName = "daily/" + System.getenv("accountID") + "-SENTIMENT-" + jobID + "/output/output.tar.gz";
         bucketController.getBucket(bucketName, keyName);
-        JSONArray sentimentJsonArr = jsonReader.txtFiletoJsonArray(Paths.get("../../../../../../src/downloads/output").toAbsolutePath().normalize().toString());
+        JSONArray sentimentJsonArr = jsonReader.txtFiletoJsonArray(Paths.get("../../../../../../output").toAbsolutePath().normalize().toString());
         sentimentJsonArr = jsonReader.combinePhrasesWithSentimentJson(sentimentJsonArr, phrases);
         JSONObject sentimentDataObject = jsonReader.organizeData(sentimentJsonArr);
     }
