@@ -24,11 +24,13 @@ import org.json.simple.JSONArray;
 public class DetectSentiment {
     private final bucketController bucketController;
     private final jsonManipulation jsonReader;
+    private final csvManipulation csvManipulator;
 
     @Inject
-    public DetectSentiment(bucketController buckController, jsonManipulation jsonReader){
+    public DetectSentiment(bucketController buckController, jsonManipulation jsonReader, csvManipulation csvManipulator){
         this.bucketController = buckController;
         this.jsonReader = jsonReader;
+        this.csvManipulator = csvManipulator;
     }
 
     @PUT

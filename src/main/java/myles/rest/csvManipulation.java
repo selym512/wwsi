@@ -18,6 +18,9 @@ import java.util.List;
 
 @ApplicationScoped
 public class csvManipulation {
+    public csvManipulation(){
+
+    }
     public String getDailySentiment() throws IOException, CsvException {
         CSVReader reader = new CSVReaderBuilder(new FileReader("dailySentiment.csv")).build();
         List<String[]> myEntries = reader.readAll();
