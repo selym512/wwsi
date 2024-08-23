@@ -1,22 +1,22 @@
 package myles.rest;
-import java.io.*;
-import java.util.List;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-@ApplicationScoped
-public class jsonManipulation {
-    public jsonManipulation(){
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class SentimentData {
+    public SentimentData(){
 
     }
 
-    public JSONArray combinePhrasesWithSentimentJson(JSONArray sentimentJsonArr, List<String> phrases){
+    public JSONArray combinePhrasesWithSentiment(JSONArray lineSentiment, List<String> phrases){
         JSONArray jsonArray = new JSONArray();
-        for(int i = 0; i <= sentimentJsonArr.size() - 1; i++){
-            JSONObject jsonO = (JSONObject) sentimentJsonArr.get(i);
+        for(int i = 0; i <= lineSentiment.size() - 1; i++){
+            JSONObject jsonO = (JSONObject) lineSentiment.get(i);
             int lineNumber = Math.toIntExact((Long) jsonO.get("Line"));
             jsonO.put("Phrase", phrases.get(lineNumber));
             jsonArray.add(jsonO);
@@ -37,33 +37,23 @@ public class jsonManipulation {
         }
         organizedData.put("positive", positiveArray);
         organizedData.put("negative", negativeArray);
+        System.out.println(organizedData);
         return organizedData;
-        }
+    }
 
-    public JSONArray txtFiletoJsonArray(String file) {
+    public ArrayList<String> txtFileToArray(String file) {
         try {
-            JSONArray jsonArray = new JSONArray();
-            JSONParser parser = new JSONParser();
+            ArrayList<String> lineSentiment = new ArrayList<String>();
             BufferedReader reader = new BufferedReader(new FileReader(file));
-            String line = reader.readLine();
-            Object jsonObj = parser.parse(line);
-            JSONObject jsonObject = (JSONObject) jsonObj;
-
-            do {
-                jsonObj = parser.parse(line);
-                jsonObject = (JSONObject) jsonObj;
-                jsonArray.add(jsonObject);
-                line = reader.readLine();
-            }
-            while (line != null);
-
+            reader.lines().forEach(lineSentiment::add);
+            System.out.println(lineSentiment.toString());
             reader.close();
-            return jsonArray;
+            return lineSentiment;
         }
-        catch(NullPointerException | ParseException | IOException e){
+        catch(NullPointerException | IOException e){
             e.printStackTrace();
             System.err.println(e + e.getMessage() + e.getCause() + e.getLocalizedMessage());
-            return new JSONArray();
+            return new ArrayList<String>();
         }
     }
 

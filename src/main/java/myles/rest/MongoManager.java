@@ -1,67 +1,151 @@
 package myles.rest;
 import com.mongodb.MongoException;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.*;
 
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
+import static com.mongodb.client.model.Filters.eq;
 
 @ApplicationScoped
 public class MongoManager {
 
-    MongoClient mongoClient;
+    private MongoClient mongoClient;
+    private MongoDatabase database;
 
-    @Inject
-    public MongoManager(){
+    public MongoManager() {
         String uri = "mongodb://localhost:27017/newsData";
-        try (MongoClient mongoC = MongoClients.create(uri)) {
-            this.mongoClient = mongoC;
-        }
-    }
-    public void insert(){
-        MongoDatabase database = mongoClient.getDatabase("newsData");
-        MongoCollection<Document> collection = database.getCollection("positivePhrases");
-        // Creates two sample documents containing a "title" field
-        List<Document> phraseList = Arrays.asList(
-                new Document().append("phrase", "David Attenborough’s colorful impact on Wimbledon and tennis: yellow balls"),
-                new Document().append("phrase", "Excitement levels rise among fans at European Championship"));
-        try {
-            // Inserts sample documents describing movies into the collection
-            InsertManyResult result = collection.insertMany(phraseList);
-            // Prints the IDs of the inserted documents
-            System.out.println("Inserted document ids: " + result.getInsertedIds());
+        this.mongoClient = MongoClients.create(uri);
+        this.database = this.mongoClient.getDatabase("newsData");
 
-            // Prints a message if any exceptions occur during the operation
-        } catch (MongoException me) {
-            System.err.println("Unable to insert due to an error: " + me);
-        }
     }
-    public void deleteAll(){
-        MongoDatabase database = mongoClient.getDatabase("newsData");
-        MongoCollection<Document> collection = database.getCollection("positivePhrases");
-        Bson query = new Document();
-        try {
-            // Deletes all documents that have an "imdb.rating" value less than 1.9
-            DeleteResult result = collection.deleteMany(query);
 
-            // Prints the number of deleted documents
+    public BsonDocument getSentimentData(){
+        MongoCollection<Document> dailySentimentCollection = database.getCollection("dailySentiment");
+        MongoCollection<Document> positivePhrasesCollection = database.getCollection("positivePhrases");
+        MongoCollection<Document> negativePhrasesCollection = database.getCollection("negativePhrases");
+
+        MongoCursor<Document> cursor = dailySentimentCollection.find().iterator();
+        BsonArray dailySentimentJSON = new BsonArray();
+        try {
+            while (cursor.hasNext()) {
+                dailySentimentJSON.add(cursor.next().toBsonDocument());
+            }
+        } finally {
+            cursor.close();
+        }
+        cursor = positivePhrasesCollection.find().iterator();
+        BsonArray positivePhraseJSON = new BsonArray();
+        try {
+            while (cursor.hasNext()) {
+                positivePhraseJSON.add(cursor.next().toBsonDocument());
+            }
+        } finally {
+            cursor.close();
+        }
+        cursor = negativePhrasesCollection.find().iterator();
+        BsonArray negativePhraseJSON = new BsonArray();
+        try {
+            while (cursor.hasNext()) {
+                negativePhraseJSON.add(cursor.next().toBsonDocument());
+            }
+        } finally {
+            cursor.close();
+        }
+
+        BsonDocument sentimentData = new BsonDocument();
+        sentimentData.put("positive", positivePhraseJSON);
+        sentimentData.put("negative", negativePhraseJSON);
+        sentimentData.put("dailySentiment", dailySentimentJSON);
+
+        return sentimentData;
+    }
+
+    public Object deleteDailySentiment(String ID){
+        MongoCollection<Document> dailySentimentCollection = database.getCollection("dailySentiment");
+        try {
+            System.out.println(ID);
+            Bson query = eq("_id", new ObjectId(ID));
+            DeleteResult result = dailySentimentCollection.deleteOne(query);
             System.out.println("Deleted document count: " + result.getDeletedCount());
-
+            return("Deleted document count: " + result.getDeletedCount());
             // Prints a message if any exceptions occur during the operation
         } catch (MongoException me) {
             System.err.println("Unable to delete due to an error: " + me);
+            return (me);
         }
-
-
     }
 
+    public void insertDailySentimentIndex(JSONObject sentimentJson){
+        MongoCollection<Document> dailySentimentCollection = database.getCollection("dailySentiment");
+        JSONArray positiveJSONArray = (JSONArray)sentimentJson.get("positive");
+        JSONArray negativeJSONArray = (JSONArray)sentimentJson.get("negative");
+        float WWSI = (float) positiveJSONArray.size() / (positiveJSONArray.size() + negativeJSONArray.size());
+        System.out.println(WWSI);
+        Document wwsiDoc = new Document("_id", new ObjectId())
+                .append("value", WWSI)
+                .append("date", new Date());
+        dailySentimentCollection.insertOne(wwsiDoc);
+    }
+
+    public void insertPhraseSentimentJson(JSONObject sentimentJson){
+        MongoCollection<Document> positivePhrasesCollection = database.getCollection("positivePhrases");
+        MongoCollection<Document> negativePhrasesCollection = database.getCollection("negativePhrases");
+
+        List<Document> posPhraseList = new ArrayList<Document>();
+        JSONArray positiveJSONArray = (JSONArray)sentimentJson.get("positive");
+        Iterator it = positiveJSONArray.iterator();
+        while (it.hasNext()) {
+            posPhraseList.add(new Document().append("phrase", it.next()));
+        }
+
+        List<Document> negPhraseList = new ArrayList<Document>();
+        JSONArray negativeJSONArray = (JSONArray)sentimentJson.get("negative");
+        it = negativeJSONArray.iterator();
+        while (it.hasNext()) {
+            negPhraseList.add(new Document().append("phrase", it.next()));
+        }
+
+        try {
+            // Inserts phrase documents into the collection
+            InsertManyResult pResult = positivePhrasesCollection.insertMany(posPhraseList);
+            InsertManyResult nResult = negativePhrasesCollection.insertMany(negPhraseList);
+
+            // Prints the IDs of the inserted documents
+            System.out.println("Inserted document ids: " + pResult.getInsertedIds());
+            System.out.println("Inserted document ids: " + nResult.getInsertedIds());
+
+
+        } catch (MongoException me) {
+            // Prints a message if any exceptions occur during the operation
+            System.err.println("Unable to insert due to an error: " + me);
+        }
+    }
+    public void deleteAllPhrases(){
+        MongoCollection<Document> posCollection = database.getCollection("positivePhrases");
+        MongoCollection<Document> negCollection = database.getCollection("negativePhrases");
+        Bson query = new Document();
+        try {
+            DeleteResult result = posCollection.deleteMany(query);
+            // Prints the number of deleted documents
+            System.out.println("Deleted positive document count: " + result.getDeletedCount());
+            result = negCollection.deleteMany(query);
+            // Prints the number of deleted documents
+            System.out.println("Deleted negative document count: " + result.getDeletedCount());
+
+        } catch (MongoException me) {
+            // Prints a message if any exceptions occur during the operation
+            System.err.println("Unable to delete due to an error: " + me);
+        }
+    }
 }
