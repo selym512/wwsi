@@ -9,9 +9,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 @ApplicationScoped
 public class jsonManipulation {
-    public jsonManipulation(){
-
-    }
 
     public JSONArray combinePhrasesWithSentimentJson(JSONArray sentimentJsonArr, List<String> phrases){
         JSONArray jsonArray = new JSONArray();

@@ -23,12 +23,8 @@ import java.nio.file.Paths;
 @ApplicationScoped
 public class bucketController {
 
-    S3Client s3Client;
+    S3Client s3Client = S3Client.builder().region(Region.US_EAST_2).build();
 
-    @Inject
-    public bucketController() {
-        this.s3Client = S3Client.builder().region(Region.US_EAST_2).build();
-    }
 
     public void getBucket(String bucketName, String keyName) {
         try {

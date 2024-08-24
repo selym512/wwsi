@@ -20,15 +20,10 @@ import static com.mongodb.client.model.Filters.eq;
 @ApplicationScoped
 public class MongoManager {
 
-    private MongoClient mongoClient;
-    private MongoDatabase database;
+    String uri = "mongodb://localhost:27017/newsData";
+    private final MongoClient mongoClient = MongoClients.create(uri);
+    private final MongoDatabase database = this.mongoClient.getDatabase("newsData");
 
-    public MongoManager() {
-        String uri = "mongodb://localhost:27017/newsData";
-        this.mongoClient = MongoClients.create(uri);
-        this.database = this.mongoClient.getDatabase("newsData");
-
-    }
 
     public BsonDocument getSentimentData(){
         MongoCollection<Document> dailySentimentCollection = database.getCollection("dailySentiment");

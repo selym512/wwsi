@@ -1,9 +1,7 @@
 package myles.rest;
 import com.opencsv.exceptions.CsvException;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.json.simple.JSONObject;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.comprehend.ComprehendClient;
@@ -15,23 +13,28 @@ import java.util.List;
 import org.json.simple.JSONArray;
 
 
-@Path("detectSentiment")
+//@Path("detectSentiment")
+@ApplicationScoped
 public class DetectSentiment {
-    private final bucketController bucketController;
-    private final jsonManipulation jsonReader;
-    private final MongoManager mongoManager;
 
     @Inject
-    public DetectSentiment(bucketController buckController, jsonManipulation jsonReader, MongoManager mongoManager){
-        this.bucketController = buckController;
-        this.jsonReader = jsonReader;
-        this.mongoManager = mongoManager;
-    }
+    private bucketController bucketController;
+    @Inject
+    private jsonManipulation jsonReader;
+    @Inject
+    private MongoManager mongoManager;
 
-    @PUT
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void runDetectSentiments(@RequestBody String putString) throws IOException, CsvException {
+
+//    public DetectSentiment(bucketController buckController, jsonManipulation jsonReader, MongoManager mongoManager){
+//        this.bucketController = buckController;
+//        this.jsonReader = jsonReader;
+//        this.mongoManager = mongoManager;
+//    }
+
+//    @PUT
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Consumes(MediaType.APPLICATION_JSON)
+    public void runDetectSentiments(String putString) throws IOException, CsvException {
         Region region = Region.US_EAST_2;
         ComprehendClient sentimentClient = ComprehendClient.builder().region(region).build();
         StartSentimentDetectionJobResponse startAnalyzerResponse = startDetectSentimentsJob(sentimentClient);
@@ -48,7 +51,7 @@ public class DetectSentiment {
         mongoManager.deleteAllPhrases();
         mongoManager.insertPhraseSentimentJson(sentimentDataObject);
     }
-    public static StartSentimentDetectionJobResponse startDetectSentimentsJob(ComprehendClient sentimentClient) throws IOException {
+    public StartSentimentDetectionJobResponse startDetectSentimentsJob(ComprehendClient sentimentClient) throws IOException {
         try {
             StartSentimentDetectionJobResponse sentimentDetectionJob = sentimentClient.startSentimentDetectionJob(builder -> builder
                 .dataAccessRoleArn(System.getenv("arn"))
