@@ -24,16 +24,6 @@ public class DetectSentiment {
     @Inject
     private MongoManager mongoManager;
 
-
-//    public DetectSentiment(bucketController buckController, jsonManipulation jsonReader, MongoManager mongoManager){
-//        this.bucketController = buckController;
-//        this.jsonReader = jsonReader;
-//        this.mongoManager = mongoManager;
-//    }
-
-//    @PUT
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Consumes(MediaType.APPLICATION_JSON)
     public void runDetectSentiments(String putString) throws IOException, CsvException {
         Region region = Region.US_EAST_2;
         ComprehendClient sentimentClient = ComprehendClient.builder().region(region).build();
@@ -47,9 +37,16 @@ public class DetectSentiment {
         List<String> phrases = List.of(putString.split("\n"));
         sentimentJsonArr = jsonReader.combinePhrasesWithSentimentJson(sentimentJsonArr, phrases);
         JSONObject sentimentDataObject = jsonReader.organizeData(sentimentJsonArr);
-        mongoManager.insertDailySentimentIndex(sentimentDataObject);
-        mongoManager.deleteAllPhrases();
-        mongoManager.insertPhraseSentimentJson(sentimentDataObject);
+        try {
+            mongoManager.insertDailySentimentIndex(sentimentDataObject);
+            System.out.println("no Illegal Argument Exception");
+            mongoManager.deleteAllPhrases();
+            mongoManager.insertPhraseSentimentJson(sentimentDataObject);
+        } catch (IllegalArgumentException i){
+            System.out.println("IllegalArgumentException");
+            mongoManager.deleteAllPhrases();
+            mongoManager.insertDailySentimentIndexZero();
+        }
     }
     public StartSentimentDetectionJobResponse startDetectSentimentsJob(ComprehendClient sentimentClient) throws IOException {
         try {

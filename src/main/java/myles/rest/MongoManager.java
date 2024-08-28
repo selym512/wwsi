@@ -92,8 +92,17 @@ public class MongoManager {
                 .append("date", new Date());
         dailySentimentCollection.insertOne(wwsiDoc);
     }
+    public void insertDailySentimentIndexZero(){
+        MongoCollection<Document> dailySentimentCollection = database.getCollection("dailySentiment");
+        float WWSI = (float) 0;
+        System.out.println(WWSI);
+        Document wwsiDoc = new Document("_id", new ObjectId())
+                .append("value", WWSI)
+                .append("date", new Date());
+        dailySentimentCollection.insertOne(wwsiDoc);
+    }
 
-    public void insertPhraseSentimentJson(JSONObject sentimentJson){
+    public void insertPhraseSentimentJson(JSONObject sentimentJson) throws IllegalArgumentException{
         MongoCollection<Document> positivePhrasesCollection = database.getCollection("positivePhrases");
         MongoCollection<Document> negativePhrasesCollection = database.getCollection("negativePhrases");
 
@@ -113,13 +122,12 @@ public class MongoManager {
 
         try {
             // Inserts phrase documents into the collection
-            InsertManyResult pResult = positivePhrasesCollection.insertMany(posPhraseList);
             InsertManyResult nResult = negativePhrasesCollection.insertMany(negPhraseList);
+            InsertManyResult pResult = positivePhrasesCollection.insertMany(posPhraseList);
 
             // Prints the IDs of the inserted documents
-            System.out.println("Inserted document ids: " + pResult.getInsertedIds());
             System.out.println("Inserted document ids: " + nResult.getInsertedIds());
-
+            System.out.println("Inserted document ids: " + pResult.getInsertedIds());
 
         } catch (MongoException me) {
             // Prints a message if any exceptions occur during the operation
