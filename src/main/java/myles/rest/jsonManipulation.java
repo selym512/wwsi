@@ -24,6 +24,7 @@ public class jsonManipulation {
         JSONObject organizedData = new JSONObject();
         JSONArray negativeArray = new JSONArray();
         JSONArray positiveArray = new JSONArray();
+        JSONArray neutralArray = new JSONArray();
         for(int i = 0; i <= sentimentJsonArr.size() - 1; i++) {
             JSONObject jsonO = (JSONObject) sentimentJsonArr.get(i);
             if(jsonO.get("Sentiment").toString().equals("NEGATIVE")){
@@ -31,11 +32,15 @@ public class jsonManipulation {
             } else if (jsonO.get("Sentiment").toString().equals("POSITIVE")){
                 positiveArray.add(jsonO);
             }
+            else {
+                neutralArray.add(jsonO);
+            }
         }
         organizedData.put("positive", positiveArray);
         organizedData.put("negative", negativeArray);
+        organizedData.put("neutral", neutralArray);
         return organizedData;
-        }
+    }
 
     public JSONArray txtFiletoJsonArray(String file) {
         try {

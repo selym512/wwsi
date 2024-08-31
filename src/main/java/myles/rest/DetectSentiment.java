@@ -38,14 +38,15 @@ public class DetectSentiment {
         sentimentJsonArr = jsonReader.combinePhrasesWithSentimentJson(sentimentJsonArr, phrases);
         JSONObject sentimentDataObject = jsonReader.organizeData(sentimentJsonArr);
         try {
-            mongoManager.insertDailySentimentIndex(sentimentDataObject);
             System.out.println("no Illegal Argument Exception");
             mongoManager.deleteAllPhrases();
+            mongoManager.insertDailySentimentIndex(sentimentDataObject);
             mongoManager.insertPhraseSentimentJson(sentimentDataObject);
         } catch (IllegalArgumentException i){
             System.out.println("IllegalArgumentException");
             mongoManager.deleteAllPhrases();
-            mongoManager.insertDailySentimentIndexZero();
+            mongoManager.insertDailySentimentIndexZero(sentimentDataObject);
+            mongoManager.insertPhraseSentimentJsonZeroPositive(sentimentDataObject);
         }
     }
     public StartSentimentDetectionJobResponse startDetectSentimentsJob(ComprehendClient sentimentClient) throws IOException {

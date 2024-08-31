@@ -20,14 +20,6 @@ public class DailySentimentController {
         this.mongoManager = mongoManager;
         this.detectSentiment = detectSentiment;
     }
-
-    @DELETE
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Object deleteDailySentiment(@RequestBody String ID){
-        return (mongoManager.deleteDailySentiment(ID));
-
-    }
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public String getSentimentData(){
